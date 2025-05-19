@@ -15,7 +15,7 @@ export default function About() {
           </p>
           <h2>Contact Information</h2>
           <p>
-            If you have any questions or suggestions, feel free to reach out to me at example@myblog.com.
+            If you have any questions or suggestions, feel free to reach out to me at mayurzsarkar@gmail.com.
           </p>
         </div>
       </div>
