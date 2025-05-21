@@ -1,9 +1,35 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('token');
+      setIsAuthenticated(!!token);
+    };
+
+    checkAuth(); // initial check
+
+    // Listen for storage changes in other tabs or on login/logout
+    window.addEventListener('storage', checkAuth);
+
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+    };
+  }, []);
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    router.push('/login');
+  };
 
   return (
     <nav className="bg-white shadow-md">
@@ -23,6 +49,17 @@ export default function Navigation() {
             <Link href="/about" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">
               About
             </Link>
+            {isAuthenticated ? (
+              <button onClick={logout} className="text-red-500 hover:text-red-700 font-medium">Logout</button>
+            ) : (
+                <>
+                <Link href="/register" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">
+                Register
+                </Link>
+              <Link href="/login" className="text-blue-600 hover:text-blue-800 font-medium">Login</Link>
+                </>
+              
+            )}
           </div>
           
           <div className="md:hidden flex items-center">
