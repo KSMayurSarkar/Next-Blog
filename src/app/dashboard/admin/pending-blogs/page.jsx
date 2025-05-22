@@ -49,8 +49,8 @@ export default function PendingBlogs() {
   const handleApprove = async (id) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:5000/api/blogs/${id}/approve`, {
-        method: 'PATCH',
+      const res = await fetch(`http://localhost:5000/api/blogs/approve/${id}`, {
+        method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -70,28 +70,33 @@ export default function PendingBlogs() {
 
   const handleReject = async (id) => {
     const token = localStorage.getItem('token');
-    const reason = rejectionReasons[id] || '';
+  const reason = rejectionReasons[id]?.trim();
 
-    try {
-      const res = await fetch(`http://localhost:5000/api/blogs/${id}/reject`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ reason }),
-      });
+  if (!reason) {
+    toast.error('Please provide a rejection reason.');
+    return;
+  }
 
-      if (res.ok) {
-        toast.success('Blog rejected successfully');
-        setBlogs((prev) => prev.filter((b) => b.id !== id));
-      } else {
-        const data = await res.json();
-        toast.error(data.message || 'Blog rejection failed');
-      }
-    } catch {
-      toast.error('Server connection error');
+  try {
+    const res = await fetch(`http://localhost:5000/api/blogs/reject/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ reason }),
+    });
+
+    if (res.ok) {
+      toast.success('Blog rejected successfully');
+      setBlogs((prev) => prev.filter((b) => b.id !== id));
+    } else {
+      const data = await res.json();
+      toast.error(data.message || 'Blog rejection failed');
     }
+  } catch {
+    toast.error('Server connection error');
+  }
   };
 
   const toggleExpand = (id) => {

@@ -43,25 +43,44 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        // This would be a real API call in a production environment
-        // const res = await fetch('http://localhost:5000/api/admin/stats', {
-        //   headers: { Authorization: `Bearer ${token}` },
-        // });
-        // const data = await res.json();
+        const token = localStorage.getItem('token');
+    
+        // Fetch all necessary data
+        const [blogsRes, usersRes, totalBlogsRes] = await Promise.all([
+          fetch('http://localhost:5000/api/blogs/pending', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch('http://localhost:5000/api/auth/', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch('http://localhost:5000/api/blogs/user-blogs/', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+        ]);
+    
+        if (!blogsRes.ok || !usersRes.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        console.log(usersRes);
+        console.log(blogsRes);
+        const pendingBlogs = await blogsRes.json(); 
+        const usersData = await usersRes.json(); 
+        const blogCount = await totalBlogsRes.json();
+        console.log(usersData);
+    
         
-        // For demonstration, using mock data
-        setTimeout(() => {
-          setStats({
-            totalBlogs: 42,
-            pendingBlogs: 7,
-            approvedBlogs: 32,
-            rejectedBlogs: 3,
-            totalUsers: 18
-          });
-          setLoading(false);
-        }, 800);
+        setStats({
+          totalBlogs: blogCount.length,           
+          pendingBlogs: pendingBlogs.length,
+          approvedBlogs: 32,        
+          rejectedBlogs: 3,         
+          totalUsers: usersData.users.length,
+        });
+    
       } catch (error) {
         toast.error('Failed to fetch dashboard statistics');
+        console.log(error);
+      } finally {
         setLoading(false);
       }
     };
